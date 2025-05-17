@@ -8,14 +8,46 @@ Licensed for use under the terms of the [MIT license](LICENSE.md).
 A simple, secure vault for storing arbitrary secrets, serializable to
 JSON, and easy to integrate into other projects.
 
-# API Overview
+## Installation
+
+Option 1: Install with `pip`:
+
+```sh
+pip install git+https://github.com/ctx400/pv@1.0.0
+```
+
+Option 2: Install with `pip` in a virtual environment:
+
+```sh
+python -m venv venv
+source venv/bin/activate
+pip install git+https://github.com/ctx400/pv@1.0.0
+```
+
+Option 3: Install with `uv`:
+
+```sh
+uv pip install git+https://github.com/ctx400/pv@1.0.0
+```
+
+Option 4: Add to a `uv`-managed Python project:
+
+```sh
+uv init myproject
+cd myproject/
+uv add git+https://github.com/ctx400/pv@1.0.0
+```
+
+## API Overview
 
 PV's API is meant to be easy to use, and easy to integrate into other
 projects. Below are some examples of normal usage.
 
-## Basic Usage Recipies
+### Basic Usage Recipies
 
 ```py
+from pv import PV
+
 # Create a new vault
 pv = PV()
 pv.save('pv.json')
@@ -38,12 +70,12 @@ print(pv.read_secret('mykey', b'master_password'))
 pv.delete_secret('mykey')
 ```
 
-# Command-Line Tool
+## Command-Line Tool
 
 PV Provides a basic command-line application implementation of
 the secrets vault. The module is a thin wrapper over PV's API.
 
-## Basic Usage Recipies
+### Basic Usage Recipies
 
 Create a new vault:
 
