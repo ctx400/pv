@@ -7,7 +7,7 @@ license = "MIT"
 authors = [
     { name = "ctx400", email = "43049420+ctx400@users.noreply.github.com" }
 ]
-requires-python = ">=3.14"
+requires-python = ">=3.10"
 dependencies = [
     "attrs>=25.3.0",
     "cattrs>=24.1.3",
