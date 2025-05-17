@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-pv = "pv:pv"
+pv = "pv.cli:pv"
 
 [build-system]
 requires = ["hatchling"]
