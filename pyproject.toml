@@ -1,7 +1,7 @@
 [project]
 name = "pv"
 version = "1.0.0"
-description = "Add your description here"
+description = "The PV Secrets Vault"
 readme = "README.md"
 license = "MIT"
 authors = [
