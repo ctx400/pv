@@ -8,6 +8,12 @@ Licensed for use under the terms of the [MIT license](LICENSE.md).
 A simple, secure vault for storing arbitrary secrets, serializable to
 JSON, and easy to integrate into other projects.
 
+## Contents
+
+- [Installation](#installation)
+- [API Overview](#api-overview)
+- [Command-Line Tool](#command-line-tool)
+
 ## Installation
 
 Option 1: Install with `pip`:
