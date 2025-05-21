@@ -113,7 +113,12 @@ def create_vault(path: Path) -> None:
     USAGE: `pv create PATH.json`
     '''
 
-    pv = PV()
+    master_password: str = getpass('Master Password: ')
+    confirm_password: str = getpass('Confirm Password: ')
+    if master_password != confirm_password:
+        print('ERROR: passwords do not match.')
+        return
+    pv = PV.init(master_password)
     pv.save(path)
 
 
@@ -134,7 +139,7 @@ def store_secret(key: str, path: Path) -> None:
     '''
 
     secret: str = getpass('Secret Value: ')
-    password: bytes = getpass('Master Password: ').encode()
+    password: str = getpass('Master Password: ')
     pv = PV.load(path)
     pv.store_secret(key, secret, password)
     pv.save(path)
@@ -156,7 +161,7 @@ def read_secret(key: str, path: Path) -> None:
     USAGE: `pv read KEY PATH.json`
     '''
 
-    password: bytes = getpass('Master Password: ').encode()
+    password: str = getpass('Master Password: ')
     pv = PV.load(path)
     print(pv.read_secret(key, password))
 
