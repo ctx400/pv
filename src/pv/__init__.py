@@ -48,7 +48,7 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 
 
-PV_VERSION: int = 1
+PV_VERSION: int = 2
 '''Current PV major version.
 
 This version number will increase after any breaking change to the
@@ -124,7 +124,6 @@ class Argon2idKDF:
         derived_key: bytes = kdf.derive(password)
         encoded_key: bytes = urlsafe_b64encode(derived_key)
         return encoded_key
-
 
 
 @define(frozen=True)
