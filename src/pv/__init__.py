@@ -11,6 +11,8 @@ JSON, and easy to integrate into other projects.
 ## Basic Usage Recipies
 
 ```py
+from pv import PV
+
 # Create a new vault
 pv = PV()
 pv.save('pv.json')
@@ -66,7 +68,7 @@ def new_salt(length: int = 16) -> str:
 
 @define(frozen=True)
 class Argon2idKDF:
-    '''Parameters for PV's Key Deriviation Function (KDF).
+    '''Argon2id Key Deriviation Function (KDF).
 
     PV uses Argon2id, a very strong hash function
     designed intentionally to be very slow, very memory intensive,
@@ -188,12 +190,6 @@ class Secret:
 class PV:
     '''The PV Secrets Vault.'''
 
-    version: int = field(default=PV_VERSION)
-    '''Database Version.
-
-    It it recommended to leave this as the default.
-    '''
-
     argon2id: Argon2idKDF = Factory(Argon2idKDF)
     '''Argon2id KDF instance with parameters.
 
@@ -202,13 +198,18 @@ class PV:
     configuration at their own peril.
     '''
 
-
     secrets: dict[str, Secret] = Factory(dict) #type:ignore - Linter Error
     '''The inner secrets store.
 
     It is strongly recommended to leave this as the default and use the
     built-in methods, such as `PV.store_secret()`, to interact with
     this store.
+    '''
+
+    version: int = field(default=PV_VERSION)
+    '''Database Version.
+
+    It it recommended to leave this as the default.
     '''
 
     def store_secret(self, key: str, value: str, master_password: bytes) -> None:
