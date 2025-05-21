@@ -14,22 +14,22 @@ JSON, and easy to integrate into other projects.
 from pv import PV
 
 # Create a new vault
-pv = PV()
+pv = PV.init('master_password')
 pv.save('pv.json')
 
 # Load an existing vault
 pv = PV.load('pv.json')
 
 # Create new secrets
-pv.store_secret('mykey', 'mysecret', b'master_password')
-pv.store_secret('google', 'mygooglepassword123', b'master_password')
+pv.store_secret('mykey', 'mysecret', 'master_password')
+pv.store_secret('google', 'mygooglepassword123', 'master_password')
 pv.save('pv.json')
 
 # List all secrets
 print(pv.list_secrets())
 
 # Read a secret
-print(pv.read_secret('mykey', b'master_password'))
+print(pv.read_secret('mykey', 'master_password'))
 
 # Delete a secret
 pv.delete_secret('mykey')
