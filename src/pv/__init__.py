@@ -86,21 +86,21 @@ class Argon2idKDF:
     for quick reference.
     '''
 
-    memory_cost: int = 94208
+    memory_cost: int = field(default=94208)
     '''Memory to use per hashing operation, in Kibibytes (KiB).
 
     Greater memory usage makes it more difficult to run
     password-cracking operations.
     '''
 
-    iterations: int = 2
+    iterations: int = field(default=2)
     '''Number of hashing rounds to perform.
 
     A greater number of iterations increases the time it takes to
     compute a hash, slowing down adversaries.
     '''
 
-    parallelism: int = 1
+    parallelism: int = field(default=1)
     '''Number of parallel threads to use.
     It is recommended to keep this value low.
     '''
@@ -198,7 +198,7 @@ class PV:
     configuration at their own peril.
     '''
 
-    secrets: dict[str, Secret] = Factory(dict) #type:ignore - Linter Error
+    secrets: dict[str, Secret] = field(factory=dict, init=False) #type:ignore - Linter Error
     '''The inner secrets store.
 
     It is strongly recommended to leave this as the default and use the
@@ -206,7 +206,7 @@ class PV:
     this store.
     '''
 
-    version: int = field(default=PV_VERSION)
+    version: int = field(default=PV_VERSION, init=False)
     '''Database Version.
 
     It it recommended to leave this as the default.
