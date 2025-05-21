@@ -49,6 +49,8 @@ uv add git+https://github.com/ctx400/pv@1.0.3
 PV's API is meant to be easy to use, and easy to integrate into other
 projects. Below are some examples of normal usage.
 
+Full API docs [here](https://ctx400.github.io/pv)
+
 ### Basic Usage Recipies
 
 ```py
