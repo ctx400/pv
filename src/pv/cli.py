@@ -56,12 +56,13 @@ user@host:~$
 # stdlib imports
 from getpass import getpass
 from pathlib import Path
+from typing import Optional
 
 # 3rd-party imports
 import click
 
 # library imports
-from pv import PV
+from pv import PV, Argon2idKDF
 
 
 #
@@ -107,7 +108,25 @@ def pv() -> None:
         'path',
         required=True,
         type=click.Path(**write_args)) #type:ignore
-def create_vault(path: Path) -> None:
+@click.option('--memory-cost',
+              type=click.INT,
+              required=False,
+              default=None,
+              help='Argon2id Memory Cost (dangerous option!)')
+@click.option('--iterations',
+              type=click.INT,
+              required=False,
+              default=None,
+              help='Argon2id Iterations (dangerous option!)')
+@click.option('--parallelism',
+              type=click.INT,
+              required=False,
+              default=None,
+              help='Argon2id Parallelism (dangerous option!)')
+def create_vault(path: Path,
+                 memory_cost: Optional[int],
+                 iterations: Optional[int],
+                 parallelism: Optional[int]) -> None:
     '''Create a new, empty vault.
 
     USAGE: `pv create PATH.json`
@@ -118,7 +137,17 @@ def create_vault(path: Path) -> None:
     if master_password != confirm_password:
         print('ERROR: passwords do not match.')
         return
-    pv = PV.init(master_password)
+
+    argon2id_params: dict[str, int] = {}
+    if memory_cost:
+        argon2id_params['memory_cost'] = memory_cost
+    if iterations:
+        argon2id_params['iterations'] = iterations
+    if parallelism:
+        argon2id_params['parallelism'] = parallelism
+
+    argon2id = Argon2idKDF(**argon2id_params)
+    pv = PV.init(master_password, argon2id)
     pv.save(path)
 
 
