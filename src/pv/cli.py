@@ -54,6 +54,7 @@ user@host:~$
 '''
 
 # stdlib imports
+import os
 from getpass import getpass
 from pathlib import Path
 from typing import Optional
@@ -96,6 +97,12 @@ read_args = { #type:ignore
 }
 
 
+#
+# Capture the master password from an environment variable, if set.
+#
+MASTER_PASSWORD: Optional[str] = os.environ.get('PV_PASSWORD')
+
+
 # Dummy function as the root command
 @click.group()
 @click.version_option(
@@ -109,7 +116,26 @@ Licensed for use under the terms of the MIT license.
 (https://github.com/ctx400/pv/blob/main/LICENSE.md)
 ''')
 def pv() -> None:
-    pass
+    '''# The PV Secrets Vault CLI
+
+    A secure vault for storing arbitrary secrets.
+
+    ## Help
+
+    To view help for a command, run `pv COMMAND --help`.
+
+    ## Environment Variables
+
+    Certain options, such as --path or the master key, can be provided
+    via environment variables. The following environment variables can
+    be set:
+
+    \b
+    | Variable    | Description                |
+    | ----------- | -------------------------- |
+    | PV_PATH     | Path to a PV vault.        |
+    | PV_PASSWORD | A vault's master password. |
+    '''
 
 
 # Create a new PV vault.
@@ -146,8 +172,8 @@ def create_vault(path: Path,
     set the environment variable PV_PATH.
     '''
 
-    master_password: str = getpass('Master Password: ')
-    confirm_password: str = getpass('Confirm Password: ')
+    master_password: str = MASTER_PASSWORD or getpass('Master Password: ')
+    confirm_password: str = MASTER_PASSWORD or getpass('Confirm Password: ')
     if master_password != confirm_password:
         print('ERROR: passwords do not match.')
         return
@@ -186,7 +212,7 @@ def store_secret(key: str, path: Path) -> None:
     '''
 
     secret: str = getpass('Secret Value: ')
-    password: str = getpass('Master Password: ')
+    password: str = MASTER_PASSWORD or getpass('Master Password: ')
     pv = PV.load(path)
     pv.store_secret(key, secret, password)
     pv.save(path)
@@ -212,7 +238,7 @@ def read_secret(key: str, path: Path) -> None:
     set the environment variable PV_PATH.
     '''
 
-    password: str = getpass('Master Password: ')
+    password: str = MASTER_PASSWORD or getpass('Master Password: ')
     pv = PV.load(path)
     print(pv.read_secret(key, password))
 
