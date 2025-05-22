@@ -19,7 +19,7 @@ JSON, and easy to integrate into other projects.
 Option 1: Install with `pip`:
 
 ```sh
-pip install git+https://github.com/ctx400/pv@2.0.0
+pip install git+https://github.com/ctx400/pv@2.1.0
 ```
 
 Option 2: Install with `pip` in a virtual environment:
@@ -27,13 +27,13 @@ Option 2: Install with `pip` in a virtual environment:
 ```sh
 python -m venv venv
 source venv/bin/activate
-pip install git+https://github.com/ctx400/pv@2.0.0
+pip install git+https://github.com/ctx400/pv@2.1.0
 ```
 
 Option 3: Install with `uv`:
 
 ```sh
-uv pip install git+https://github.com/ctx400/pv@2.0.0
+uv pip install git+https://github.com/ctx400/pv@2.1.0
 ```
 
 Option 4: Add to a `uv`-managed Python project:
@@ -41,7 +41,7 @@ Option 4: Add to a `uv`-managed Python project:
 ```sh
 uv init myproject
 cd myproject/
-uv add git+https://github.com/ctx400/pv@2.0.0
+uv add git+https://github.com/ctx400/pv@2.1.0
 ```
 
 ## API Overview
