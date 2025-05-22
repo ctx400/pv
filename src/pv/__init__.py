@@ -293,7 +293,7 @@ class PV:
     def delete_secret(self, key: str) -> None:
         '''Delete a secret from the database.'''
 
-        # Encrypt the provided key name.
+        # Remove the secret from the vault.
         _ = self.secrets.pop(key, None)
 
     def save(self, path: Path) -> None:
