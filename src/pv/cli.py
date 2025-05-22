@@ -1,4 +1,4 @@
-'''CLI implementation of PV.
+'''# The PV CLI
 
 Provides a basic command-line application implementation of
 the PV secrets vault. The module is a thin wrapper over PV's API.
