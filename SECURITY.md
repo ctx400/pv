@@ -6,7 +6,7 @@ Versions of PV listed below are currently supported with security updates.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 2.0.x   | :white_check_mark: |
+| 2.x.x   | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
