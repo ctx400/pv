@@ -98,6 +98,16 @@ read_args = { #type:ignore
 
 # Dummy function as the root command
 @click.group()
+@click.version_option(
+    package_name='pv',
+    prog_name='The PV Secrets Vault',
+    message='''\
+%(prog)s, version %(version)s
+Copyright (c) 2025 ctx400 (https://github.com/ctx400).
+
+Licensed for use under the terms of the MIT license.
+(https://github.com/ctx400/pv/blob/main/LICENSE.md)
+''')
 def pv() -> None:
     pass
 
