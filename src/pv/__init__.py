@@ -216,7 +216,7 @@ class MasterKey:
         fernet = Fernet(protection_key)
         encrypted_master: bytes = fernet.encrypt(master_key)
 
-        # Base64-encode the protection key.
+        # Base64-encode the encrypted master key.
         # Return the new encrypted MasterKey instance.
         encoded_master: str = urlsafe_b64encode(encrypted_master).decode()
         return cls(
@@ -287,13 +287,13 @@ class PV:
     def list_secrets(self) -> list[str]:
         '''List all secrets in the database.'''
 
-        # Return a list of decrypted key names.
+        # Return a list of stored keys.
         return [key for key in self.secrets.keys()]
 
     def delete_secret(self, key: str) -> None:
         '''Delete a secret from the database.'''
 
-        # Encrypt the provided key name.
+        # Remove the secret from the vault.
         _ = self.secrets.pop(key, None)
 
     def save(self, path: Path) -> None:
