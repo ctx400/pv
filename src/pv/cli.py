@@ -24,7 +24,7 @@ Store a secret in the vault:
 
 ```console
 user@host:~$ export PV_PATH='pv.json'
-user@host:~$ export PV_PASSWORD='my-master-password'
+user@host:~$ export PV_PASSWORD='my master password'
 user@host:~$ pv store mykey
 Secret Value: ********
 
