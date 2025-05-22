@@ -37,18 +37,36 @@ pv.delete_secret('mykey')
 '''
 
 # stdlib imports
-import json
-import secrets
-from pathlib import Path
-from base64 import urlsafe_b64encode, urlsafe_b64decode
-from typing import Optional
+import json as _json
+import secrets as _secrets
+from pathlib import Path as _Path
+from base64 import urlsafe_b64encode as _urlsafe_b64encode
+from base64 import urlsafe_b64decode as _urlsafe_b64decode
+from typing import Optional as _Optional
 
 # 3rd-party imports
-from cattrs import structure, unstructure
-from attrs import define, field, Factory
-from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
+from cattrs import structure as _structure
+from cattrs import unstructure as _unstructure
+from attrs import define as _define
+from attrs import field as _field
+from attrs import Factory as _Factory
+from cryptography.fernet import Fernet as _Fernet
+from cryptography.hazmat.primitives.kdf.argon2 import Argon2id as _Argon2id
 
+#
+# Export Control
+#
+__all__ = [
+    # This Module
+    'PV',
+    'MasterKey',
+    'Secret',
+    'Argon2idKDF',
+    'new_salt',
+
+    # Other Modules
+    'cli', #type:ignore - For pdoc's sake
+]
 
 PV_VERSION: int = 2
 '''Current PV major version.
@@ -61,12 +79,12 @@ vault structure or its operation.
 def new_salt(length: int = 16) -> str:
     '''Generates a base64-encoded random salt.'''
 
-    salt: bytes = secrets.token_bytes(length)
-    encoded: bytes = urlsafe_b64encode(salt)
+    salt: bytes = _secrets.token_bytes(length)
+    encoded: bytes = _urlsafe_b64encode(salt)
     return encoded.decode()
 
 
-@define(frozen=True)
+@_define(frozen=True)
 class Argon2idKDF:
     '''Argon2id Key Deriviation Function (KDF).
 
@@ -86,21 +104,21 @@ class Argon2idKDF:
     for quick reference.
     '''
 
-    memory_cost: int = field(default=94208)
+    memory_cost: int = _field(default=94208)
     '''Memory to use per hashing operation, in Kibibytes (KiB).
 
     Greater memory usage makes it more difficult to run
     password-cracking operations.
     '''
 
-    iterations: int = field(default=2)
+    iterations: int = _field(default=2)
     '''Number of hashing rounds to perform.
 
     A greater number of iterations increases the time it takes to
     compute a hash, slowing down adversaries.
     '''
 
-    parallelism: int = field(default=1)
+    parallelism: int = _field(default=1)
     '''Number of parallel threads to use.
     It is recommended to keep this value low.
     '''
@@ -116,7 +134,7 @@ class Argon2idKDF:
         best practices for choosing a password.
         '''
 
-        kdf = Argon2id(
+        kdf = _Argon2id(
             salt=salt,
             memory_cost=self.memory_cost,
             iterations=self.iterations,
@@ -124,36 +142,36 @@ class Argon2idKDF:
             length=32,
         )
         derived_key: bytes = kdf.derive(password)
-        encoded_key: bytes = urlsafe_b64encode(derived_key)
+        encoded_key: bytes = _urlsafe_b64encode(derived_key)
         return encoded_key
 
 
-@define(frozen=True)
+@_define(frozen=True)
 class Secret:
     '''An encrypted secret stored in a PV database.'''
 
-    secret: str = field()
+    secret: str = _field()
     '''The secret to encrypt/decrypt.'''
 
-    def seal(self, fernet: Fernet) -> 'Secret':
+    def seal(self, fernet: _Fernet) -> 'Secret':
         '''Returns an encrypted (sealed) `Secret` instance.'''
 
         # Encrypt the secret.
         encrypted_secret: bytes = fernet.encrypt(self.secret.encode())
 
         # Serialize and decode the secret.
-        serialized_secret: bytes = urlsafe_b64encode(encrypted_secret)
+        serialized_secret: bytes = _urlsafe_b64encode(encrypted_secret)
         decoded_secret: str = serialized_secret.decode()
 
         # Return the sealed secret.
         return Secret(decoded_secret)
 
-    def unseal(self, fernet: Fernet) -> 'Secret':
+    def unseal(self, fernet: _Fernet) -> 'Secret':
         '''Returns a plaintext (unsealed) `Secret` instance.'''
 
         # Encode and deserialize the secret.
         encoded_secret: bytes = self.secret.encode()
-        deserialized_secret: bytes = urlsafe_b64decode(encoded_secret)
+        deserialized_secret: bytes = _urlsafe_b64decode(encoded_secret)
 
         # Decrypt and decode the secret.
         plaintext_secret: bytes = fernet.decrypt(deserialized_secret)
@@ -163,11 +181,11 @@ class Secret:
         return Secret(decoded_secret)
 
 
-@define(frozen=True)
+@_define(frozen=True)
 class MasterKey:
     '''Master encryption key for the vault.'''
 
-    seal: str = field()
+    seal: str = _field()
     '''The encrypted master key.
 
     The vault's master key is protected by the master password. It in
@@ -176,7 +194,7 @@ class MasterKey:
     manually!
     '''
 
-    salt: str = Factory(new_salt)
+    salt: str = _Factory(new_salt)
     '''Salt for the encrypted master key.
 
     When creating a new vault, it is **strongly recommended** to leave
@@ -184,21 +202,21 @@ class MasterKey:
     autogenerated.
     '''
 
-    def unseal(self, master_password: bytes, kdf: Argon2idKDF) -> Fernet:
+    def unseal(self, master_password: bytes, kdf: Argon2idKDF) -> _Fernet:
         '''Unseal the vault's master key.'''
 
         # Deserialize and encode the encrypted master key.
-        encrypted_master: bytes = urlsafe_b64decode(self.seal.encode())
+        encrypted_master: bytes = _urlsafe_b64decode(self.seal.encode())
 
         # Derive our protection key from the master password.
         # Create a fernet instance from the protection key.
         protection_key: bytes = kdf.derive(master_password, self.salt.encode())
-        protection_fernet = Fernet(protection_key)
+        protection_fernet = _Fernet(protection_key)
 
         # Decrypt the vault's master key.
         # Create and return the final Fernet for vault operations.
         master_key: bytes = protection_fernet.decrypt(encrypted_master)
-        master_fernet = Fernet(master_key)
+        master_fernet = _Fernet(master_key)
         return master_fernet
 
     @classmethod
@@ -206,37 +224,37 @@ class MasterKey:
         '''Create a new master key, protected by a master vault password.'''
 
         # Generate a strong encryption key for the vault.
-        master_key: bytes = Fernet.generate_key()
+        master_key: bytes = _Fernet.generate_key()
 
         # Derive a protection key from the master password
         salt: str = new_salt()
         protection_key: bytes = kdf.derive(master_password, salt.encode())
 
         # Encrypt the vault's master key.
-        fernet = Fernet(protection_key)
+        fernet = _Fernet(protection_key)
         encrypted_master: bytes = fernet.encrypt(master_key)
 
         # Base64-encode the encrypted master key.
         # Return the new encrypted MasterKey instance.
-        encoded_master: str = urlsafe_b64encode(encrypted_master).decode()
+        encoded_master: str = _urlsafe_b64encode(encrypted_master).decode()
         return cls(
             seal=encoded_master,
             salt=salt,
         )
 
 
-@define
+@_define
 class PV:
     '''The PV Secrets Vault.'''
 
-    master_key: MasterKey = field()
+    master_key: MasterKey = _field()
     '''The encrypted master key for this vault.
 
     The vault's master key is protected by a master password. When
     creating a new vault, use `PV.init()` to set the master password.
     '''
 
-    argon2id: Argon2idKDF = Factory(Argon2idKDF)
+    argon2id: Argon2idKDF = _Factory(Argon2idKDF)
     '''Argon2id KDF instance with parameters.
 
     Most users are **strongly** recommended to leave this as the
@@ -244,7 +262,7 @@ class PV:
     configuration at their own peril.
     '''
 
-    secrets: dict[str, Secret] = field(factory=dict) #type:ignore - Linter Error
+    secrets: dict[str, Secret] = _field(factory=dict) #type:ignore - Linter Error
     '''The inner secrets store.
 
     It is strongly recommended to leave this as the default and use the
@@ -252,7 +270,7 @@ class PV:
     this store.
     '''
 
-    version: int = field(default=PV_VERSION)
+    version: int = _field(default=PV_VERSION)
     '''Database Version.
 
     It it recommended to leave this as the default.
@@ -276,7 +294,7 @@ class PV:
         # Unseal the master key.
         # Retrieve the sealed secret from the database.
         fernet = self.master_key.unseal(master_password.encode(), self.argon2id)
-        sealed_secret: Optional[Secret] = self.secrets.get(key)
+        sealed_secret: _Optional[Secret] = self.secrets.get(key)
         if not sealed_secret:
             raise KeyError(f'Secret {key} does not exist.', key)
 
@@ -296,27 +314,27 @@ class PV:
         # Remove the secret from the vault.
         _ = self.secrets.pop(key, None)
 
-    def save(self, path: Path) -> None:
+    def save(self, path: _Path) -> None:
         '''Save the database as JSON to `path`.'''
 
         # Serialize and write the database.
-        serialized_pv = unstructure(self) #type:ignore - Fundamentally untyped.
+        serialized_pv = _unstructure(self) #type:ignore - Fundamentally untyped.
         with open(path, 'w') as fd:
-            json.dump(serialized_pv, fd)
+            _json.dump(serialized_pv, fd)
 
     @classmethod
-    def load(cls, path: Path) -> 'PV':
+    def load(cls, path: _Path) -> 'PV':
         '''Load the database as JSON from `path`.'''
 
         # Read in the serialized database.
         with open(path, 'r') as fd:
-            serialized_pv = json.load(fd) #type:ignore - Fundamentally untyped.
+            serialized_pv = _json.load(fd) #type:ignore - Fundamentally untyped.
 
         # Deserialize and return the database
-        return structure(serialized_pv, cls)
+        return _structure(serialized_pv, cls)
 
     @classmethod
-    def init(cls, master_password: str, argon2id: Optional[Argon2idKDF] = None):
+    def init(cls, master_password: str, argon2id: _Optional[Argon2idKDF] = None):
         '''Create a new vault with the given master password.
 
         This method creates a new vault with the given master password,
