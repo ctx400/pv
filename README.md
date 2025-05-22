@@ -19,7 +19,7 @@ JSON, and easy to integrate into other projects.
 Option 1: Install with `pip`:
 
 ```sh
-pip install git+https://github.com/ctx400/pv@2.0.0
+pip install git+https://github.com/ctx400/pv@2.1.0
 ```
 
 Option 2: Install with `pip` in a virtual environment:
@@ -27,13 +27,13 @@ Option 2: Install with `pip` in a virtual environment:
 ```sh
 python -m venv venv
 source venv/bin/activate
-pip install git+https://github.com/ctx400/pv@2.0.0
+pip install git+https://github.com/ctx400/pv@2.1.0
 ```
 
 Option 3: Install with `uv`:
 
 ```sh
-uv pip install git+https://github.com/ctx400/pv@2.0.0
+uv pip install git+https://github.com/ctx400/pv@2.1.0
 ```
 
 Option 4: Add to a `uv`-managed Python project:
@@ -41,7 +41,7 @@ Option 4: Add to a `uv`-managed Python project:
 ```sh
 uv init myproject
 cd myproject/
-uv add git+https://github.com/ctx400/pv@2.0.0
+uv add git+https://github.com/ctx400/pv@2.1.0
 ```
 
 ## API Overview
@@ -88,16 +88,25 @@ the secrets vault. The module is a thin wrapper over PV's API.
 Create a new vault:
 
 ```console
-user@host:~$ pv create pv.json
+user@host:~$ pv create --path pv.json
+Master Password: ********
+Confirm Password: ********
+
 user@host:~$
 ```
 
 Store a secret in the vault:
 
+> **Tip:** As a shortcut, you can set the `PV_PATH` environment variable
+  to avoid having to pass `--path` to every command. If you're brave
+  enough, you can also set `PV_PASSWORD` to avoid typing your master
+  password for every `store` and `read` operation.
+
 ```console
-user@host:~$ pv store mykey pv.json
+user@host:~$ export PV_PATH='pv.json'
+user@host:~$ export PV_PASSWORD='my-master-password'
+user@host:~$ pv store mykey
 Secret Value: ********
-Master Password: ********
 
 user@host:~$
 ```
@@ -105,7 +114,7 @@ user@host:~$
 List all secrets in a vault:
 
 ```console
-user@host:~$ pv list pv.json
+user@host:~$ pv list
 secret1
 hello-world
 google
@@ -118,8 +127,7 @@ user@host:~$
 Read a secret from the vault:
 
 ```console
-user@host:~$ pv read mykey pv.json
-Master Password: ********
+user@host:~$ pv read mykey
 my secret value
 
 user@host:~$
@@ -128,6 +136,13 @@ user@host:~$
 Delete a secret from the vault:
 
 ```console
-user@host:~$ pv delete mykey pv.json
+user@host:~$ pv delete mykey
+user@host:~$
+```
+
+To get help on any command, just run:
+
+```console
+user@host:~$ pv COMMAND --help
 user@host:~$
 ```
