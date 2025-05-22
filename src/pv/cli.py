@@ -202,7 +202,13 @@ def create_vault(path: Path,
         envvar='PV_PATH',
         required=True,
         type=click.Path(**readwrite_args)) #type:ignore
-def store_secret(key: str, path: Path) -> None:
+@click.option(
+        '--unsafe-value', 'value',
+        required=False,
+        default=None,
+        help='Unsafely set the value directly on the cli.',
+        type=click.STRING)
+def store_secret(key: str, path: Path, value: Optional[str]) -> None:
     '''Store a secret in the vault.
 
     USAGE: `pv store --path pv.json KEY`
@@ -211,7 +217,7 @@ def store_secret(key: str, path: Path) -> None:
     set the environment variable PV_PATH.
     '''
 
-    secret: str = getpass('Secret Value: ')
+    secret: str = value or getpass('Secret Value: ')
     password: str = MASTER_PASSWORD or getpass('Master Password: ')
     pv = PV.load(path)
     pv.store_secret(key, secret, password)
