@@ -287,7 +287,7 @@ class PV:
     def list_secrets(self) -> list[str]:
         '''List all secrets in the database.'''
 
-        # Return a list of decrypted key names.
+        # Return a list of stored keys.
         return [key for key in self.secrets.keys()]
 
     def delete_secret(self, key: str) -> None:
