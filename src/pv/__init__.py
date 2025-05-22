@@ -216,7 +216,7 @@ class MasterKey:
         fernet = Fernet(protection_key)
         encrypted_master: bytes = fernet.encrypt(master_key)
 
-        # Base64-encode the protection key.
+        # Base64-encode the encrypted master key.
         # Return the new encrypted MasterKey instance.
         encoded_master: str = urlsafe_b64encode(encrypted_master).decode()
         return cls(
