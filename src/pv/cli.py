@@ -1,4 +1,4 @@
-'''CLI implementation of PV.
+'''# The PV CLI
 
 Provides a basic command-line application implementation of
 the PV secrets vault. The module is a thin wrapper over PV's API.
@@ -8,16 +8,25 @@ the PV secrets vault. The module is a thin wrapper over PV's API.
 Create a new vault:
 
 ```console
-user@host:~$ pv create pv.json
+user@host:~$ pv create --path pv.json
+Master Password: ********
+Confirm Password: ********
+
 user@host:~$
 ```
 
 Store a secret in the vault:
 
+> **Tip:** As a shortcut, you can set the `PV_PATH` environment variable
+  to avoid having to pass `--path` to every command. If you're brave
+  enough, you can also set `PV_PASSWORD` to avoid typing your master
+  password for every `store` and `read` operation.
+
 ```console
-user@host:~$ pv store mykey pv.json
+user@host:~$ export PV_PATH='pv.json'
+user@host:~$ export PV_PASSWORD='my master password'
+user@host:~$ pv store mykey
 Secret Value: ********
-Master Password: ********
 
 user@host:~$
 ```
@@ -25,7 +34,7 @@ user@host:~$
 List all secrets in a vault:
 
 ```console
-user@host:~$ pv list pv.json
+user@host:~$ pv list
 secret1
 hello-world
 google
@@ -38,8 +47,7 @@ user@host:~$
 Read a secret from the vault:
 
 ```console
-user@host:~$ pv read mykey pv.json
-Master Password: ********
+user@host:~$ pv read mykey
 my secret value
 
 user@host:~$
@@ -48,28 +56,40 @@ user@host:~$
 Delete a secret from the vault:
 
 ```console
-user@host:~$ pv delete mykey pv.json
+user@host:~$ pv delete mykey
+user@host:~$
+```
+
+To get help on any command, just run:
+
+```console
+user@host:~$ pv COMMAND --help
 user@host:~$
 ```
 '''
 
 # stdlib imports
-from getpass import getpass
-from pathlib import Path
-from typing import Optional
+import os as _os
+from getpass import getpass as _getpass
+from pathlib import Path as _Path
+from typing import Optional as _Optional
 
 # 3rd-party imports
-import click
+import click as _click
 
 # library imports
 from pv import PV, Argon2idKDF
 
+#
+# Export Control
+#
+__all__ = []
 
 #
 # kwargs for various arguments
 #
 common_args = { #type:ignore
-    'path_type': Path,
+    'path_type': _Path,
     'allow_dash': False,
     'dir_okay': False,
     'file_okay': True,
@@ -96,44 +116,83 @@ read_args = { #type:ignore
 }
 
 
+#
+# Capture the master password from an environment variable, if set.
+#
+MASTER_PASSWORD: _Optional[str] = _os.environ.get('PV_PASSWORD')
+
+
 # Dummy function as the root command
-@click.group()
+@_click.group()
+@_click.version_option(
+    package_name='pv',
+    prog_name='The PV Secrets Vault',
+    message='''\
+%(prog)s, version %(version)s
+Copyright (c) 2025 ctx400 (https://github.com/ctx400).
+
+Licensed for use under the terms of the MIT license.
+(https://github.com/ctx400/pv/blob/main/LICENSE.md)
+''')
 def pv() -> None:
-    pass
+    '''# The PV Secrets Vault CLI
+
+    A secure vault for storing arbitrary secrets.
+
+    ## Help
+
+    To view help for a command, run `pv COMMAND --help`.
+
+    ## Environment Variables
+
+    Certain options, such as --path or the master key, can be provided
+    via environment variables. The following environment variables can
+    be set:
+
+    \b
+    | Variable    | Description                |
+    | ----------- | -------------------------- |
+    | PV_PATH     | Path to a PV vault.        |
+    | PV_PASSWORD | A vault's master password. |
+    '''
 
 
 # Create a new PV vault.
 @pv.command('create')
-@click.argument(
-        'path',
+@_click.option(
+        '--path', '-p',
+        envvar='PV_PATH',
         required=True,
-        type=click.Path(**write_args)) #type:ignore
-@click.option('--memory-cost',
-              type=click.INT,
+        type=_click.Path(**write_args)) #type:ignore
+@_click.option('--memory-cost',
+              type=_click.INT,
               required=False,
               default=None,
               help='Argon2id Memory Cost (dangerous option!)')
-@click.option('--iterations',
-              type=click.INT,
+@_click.option('--iterations',
+              type=_click.INT,
               required=False,
               default=None,
               help='Argon2id Iterations (dangerous option!)')
-@click.option('--parallelism',
-              type=click.INT,
+@_click.option('--parallelism',
+              type=_click.INT,
               required=False,
               default=None,
               help='Argon2id Parallelism (dangerous option!)')
-def create_vault(path: Path,
-                 memory_cost: Optional[int],
-                 iterations: Optional[int],
-                 parallelism: Optional[int]) -> None:
+def create_vault(path: _Path,
+                 memory_cost: _Optional[int],
+                 iterations: _Optional[int],
+                 parallelism: _Optional[int]) -> None:
     '''Create a new, empty vault.
 
-    USAGE: `pv create PATH.json`
+    USAGE: `pv create --path pv.json`
+
+    HINT: Instead of passing --path, you can also
+    set the environment variable PV_PATH.
     '''
 
-    master_password: str = getpass('Master Password: ')
-    confirm_password: str = getpass('Confirm Password: ')
+    master_password: str = MASTER_PASSWORD or _getpass('Master Password: ')
+    confirm_password: str = MASTER_PASSWORD or _getpass('Confirm Password: ')
     if master_password != confirm_password:
         print('ERROR: passwords do not match.')
         return
@@ -153,22 +212,32 @@ def create_vault(path: Path,
 
 # Store a secret in the vault.
 @pv.command('store')
-@click.argument(
+@_click.argument(
         'key',
         required=True,
-        type=click.STRING)
-@click.argument(
-        'path',
+        type=_click.STRING)
+@_click.option(
+        '--path', '-p',
+        envvar='PV_PATH',
         required=True,
-        type=click.Path(**readwrite_args)) #type:ignore
-def store_secret(key: str, path: Path) -> None:
+        type=_click.Path(**readwrite_args)) #type:ignore
+@_click.option(
+        '--unsafe-value', 'value',
+        required=False,
+        default=None,
+        help='Unsafely set the value directly on the cli.',
+        type=_click.STRING)
+def store_secret(key: str, path: _Path, value: _Optional[str]) -> None:
     '''Store a secret in the vault.
 
-    USAGE: `pv store KEY PATH.json`
+    USAGE: `pv store --path pv.json KEY`
+
+    HINT: Instead of passing --path, you can also
+    set the environment variable PV_PATH.
     '''
 
-    secret: str = getpass('Secret Value: ')
-    password: str = getpass('Master Password: ')
+    secret: str = value or _getpass('Secret Value: ')
+    password: str = MASTER_PASSWORD or _getpass('Master Password: ')
     pv = PV.load(path)
     pv.store_secret(key, secret, password)
     pv.save(path)
@@ -176,39 +245,47 @@ def store_secret(key: str, path: Path) -> None:
 
 # Read a secret from the vault.
 @pv.command('read')
-@click.argument(
+@_click.argument(
         'key',
         required=True,
-        type=click.STRING)
-@click.argument(
-        'path',
+        type=_click.STRING)
+@_click.option(
+        '--path', '-p',
+        envvar='PV_PATH',
         required=True,
-        type=click.Path(**read_args)) #type:ignore
-def read_secret(key: str, path: Path) -> None:
+        type=_click.Path(**read_args)) #type:ignore
+def read_secret(key: str, path: _Path) -> None:
     '''Read a secret from the vault.
 
-    USAGE: `pv read KEY PATH.json`
+    USAGE: `pv read --path pv.json KEY`
+
+    HINT: Instead of passing --path, you can also
+    set the environment variable PV_PATH.
     '''
 
-    password: str = getpass('Master Password: ')
+    password: str = MASTER_PASSWORD or _getpass('Master Password: ')
     pv = PV.load(path)
     print(pv.read_secret(key, password))
 
 
 # Delete a secret from the vault.
 @pv.command('delete')
-@click.argument(
+@_click.argument(
         'key',
         required=True,
-        type=click.STRING)
-@click.argument(
-        'path',
+        type=_click.STRING)
+@_click.option(
+        '--path', '-p',
+        envvar='PV_PATH',
         required=True,
-        type=click.Path(**readwrite_args)) #type:ignore
-def delete_secret(key: str, path: Path) -> None:
+        type=_click.Path(**readwrite_args)) #type:ignore
+def delete_secret(key: str, path: _Path) -> None:
     '''Delete a secret from the vault.
 
-    USAGE: `pv delete KEY PATH.json`
+    USAGE: `pv delete --path pv.json KEY`
+
+    HINT: Instead of passing --path, you can also
+    set the environment variable PV_PATH.
     '''
 
     pv = PV.load(path)
@@ -218,14 +295,18 @@ def delete_secret(key: str, path: Path) -> None:
 
 # List all secrets in the vault.
 @pv.command('list')
-@click.argument(
-        'path',
+@_click.option(
+        '--path', '-p',
+        envvar='PV_PATH',
         required=True,
-        type=click.Path(**read_args)) #type:ignore
-def list_secrets(path: Path) -> None:
+        type=_click.Path(**read_args)) #type:ignore
+def list_secrets(path: _Path) -> None:
     '''List all secrets in the vault.
 
-    USAGE: `pv list PATH.json`
+    USAGE: `pv list --path pv.json`
+
+    HINT: Instead of passing --path, you can also
+    set the environment variable PV_PATH.
     '''
 
     pv = PV.load(path)
