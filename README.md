@@ -20,6 +20,7 @@ Option 1: Install with `pip`:
 
 ```sh
 pip install git+https://github.com/ctx400/pv@2.1.0
+pv --version
 ```
 
 Option 2: Install with `pip` in a virtual environment:
@@ -28,12 +29,14 @@ Option 2: Install with `pip` in a virtual environment:
 python -m venv venv
 source venv/bin/activate
 pip install git+https://github.com/ctx400/pv@2.1.0
+pv --version
 ```
 
-Option 3: Install with `uv`:
+Option 3: Install the CLI with `uv`:
 
 ```sh
-uv pip install git+https://github.com/ctx400/pv@2.1.0
+uv tool install git+https://github.com/ctx400/pv@2.1.0
+pv --version
 ```
 
 Option 4: Add to a `uv`-managed Python project:
@@ -42,6 +45,7 @@ Option 4: Add to a `uv`-managed Python project:
 uv init myproject
 cd myproject/
 uv add git+https://github.com/ctx400/pv@2.1.0
+pv --version
 ```
 
 ## API Overview
